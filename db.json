@@ -1,0 +1,18 @@
+{
+  "users": {
+    "student": "scrypt:32768:8:1$aaJqzd2eZLRcNPJK$18eb9e912c77c9a02a0c91084efb7993631f066182dd66a56a2ae4d100a5cebec2481007bf5dc5e75d08c1f694e1155f2b4419d8cf8ecff7df1808140753923a",
+    "friend_api": "scrypt:32768:8:1$FCTh3EM2scJuiBbP$b655296880537ab08efa5e77087e6beffb959ecc48d80b220227f4abe4aa588bb294260e7addb5e7dd60a5049a1fc05d26c8aa3822e4176c1f5258114504d59f"
+  },
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Design Mana-Brew website",
+      "status": "pending"
+    },
+    {
+      "id": 2,
+      "title": "Train YOLOv8 model for Yu-Gi-Oh! cards",
+      "status": "in_progress"
+    }
+  ]
+}
