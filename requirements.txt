@@ -1,0 +1,6 @@
+Flask, 
+PyJWT, 
+requests, 
+python-dotenv, 
+Werkzeug,
+gunicorn
