@@ -6,7 +6,6 @@ import datetime
 import requests
 from functools import wraps
 from dotenv import load_dotenv
-from werkzeug.security import generate_password_hash, check_password_hash
 
 load_dotenv()
 
@@ -57,8 +56,8 @@ def login():
     password = data.get('password')
     db = load_db()
 
-    # ตรวจสอบ User และ Hash Password
-    if username in db['users'] and check_password_hash(db['users'][username], password):
+    # ตรวจสอบ User และ Password แบบธรรมดา (Plain text)
+    if username in db['users'] and db['users'][username] == password:
         token = jwt.encode({
             'user': username,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
@@ -97,14 +96,13 @@ def create_task(current_user):
 @app.route('/external-tasks', methods=['GET'])
 @token_required
 def get_external_tasks(current_user):
-    # สมมติว่านี่คือ URL ของเพื่อนที่ Deploy แล้ว (ต้องไปขอจากเพื่อน)
-    friend_login_url = "http://localhost:5001/login" 
-    friend_tasks_url = "http://localhost:5001/tasks"
+    friend_login_url = "https://mini-task-api.onrender.com/login" 
+    friend_tasks_url = "https://mini-task-api.onrender.com/tasks"
     
-    # รหัสผ่านที่เพื่อนสร้างไว้ให้กลุ่มเราไปล็อกอิน
+    # ✅ ดึงรหัสผ่านเพื่อนจากไฟล์ .env แทนการ Hardcode (หากต้องการทำในอนาคต)
     friend_credentials = {
-        "username": "my_group",
-        "password": "password_from_friend"
+        "username": os.environ.get("FRIEND_API_USERNAME"),
+        "password": os.environ.get("FRIEND_API_PASSWORD")
     }
     
     try:
@@ -120,7 +118,7 @@ def get_external_tasks(current_user):
             "Authorization": f"Bearer {friend_token}"
         }
         
-        # เรียก API เพื่อน และป้องกันกรณี Timeout [cite: 64]
+        # เรียก API เพื่อน และป้องกันกรณี Timeout
         task_response = requests.get(friend_tasks_url, headers=headers, timeout=5) 
         task_response.raise_for_status()
         
@@ -128,10 +126,10 @@ def get_external_tasks(current_user):
         external_data = task_response.json()
         
     except requests.exceptions.RequestException as e:
-        # ถ้าเซิร์ฟเวอร์เพื่อนล่ม หรือรหัสผิด จะเข้าเงื่อนไขนี้ [cite: 275]
+        # ถ้าเซิร์ฟเวอร์เพื่อนล่ม หรือรหัสผิด จะเข้าเงื่อนไขนี้
         return jsonify({"error": {"code": 500, "message": f"Failed to connect to friend's API: {str(e)}"}}), 500
 
-    # สเต็ปที่ 3: ดึงข้อมูลของเรา แล้วเอามาผสมกับของเพื่อน [cite: 61, 246]
+    # สเต็ปที่ 3: ดึงข้อมูลของเรา แล้วเอามาผสมกับของเพื่อน
     db = load_db()
     
     return jsonify({
